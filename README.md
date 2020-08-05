@@ -2,7 +2,10 @@
 
 ## Installation
 
-TBD
+```R
+library(devtools)
+devtools::install_github("rxa-io/readysignal-r")
+```
 
 ## Usage
 
