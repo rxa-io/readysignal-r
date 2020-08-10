@@ -25,7 +25,7 @@ connect_to_readysignal <- function(access_token, signal_id=NA, output=FALSE)
 
   # set up auth and make request
   auth <- paste0("Bearer ", access_token)
-  resp <- httr::GET(url, add_headers(Authorization=auth))
+  resp <- httr::GET(url, httr::add_headers(Authorization=auth))
   
   return(resp)
 }
