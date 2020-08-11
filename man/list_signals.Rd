@@ -13,5 +13,5 @@ list_signals(access_token)
 A data.frame containing the list of signals
 }
 \description{
-Function Description
+List Signals
 }

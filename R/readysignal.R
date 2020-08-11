@@ -33,8 +33,6 @@ connect_to_readysignal <- function(access_token, signal_id=NA, output=FALSE)
 
 #' List Signals
 #'
-#' TODO Function Description
-#'
 #' @param access_token User's access token
 #' @return A data.frame containing the list of signals
 #' @export
@@ -47,8 +45,6 @@ list_signals <- function(access_token)
 
 
 #' List Signal Details
-#'
-#' TODO Function Description
 #'
 #' @param access_token User's access token
 #' @param signal_id Signal ID
@@ -64,8 +60,6 @@ get_signal_details <- function(access_token, signal_id)
 
 #' Get Signal
 #'
-#' TODO Function Description
-#'
 #' @param access_token User's access token
 #' @param signal_id Signal ID
 #' @return A data.frame containing the data for a signal
@@ -80,12 +74,9 @@ get_signal <- function(access_token, signal_id)
 
 #' Save Signal to CSV
 #'
-#' TODO Function Description
-#'
 #' @param access_token User's access token
 #' @param signal_id Signal ID
 #' @param file_name File name for the CSV
-#' @return NA
 #' @export
 signal_to_csv <- function(access_token, signal_id, file_name) 
 {

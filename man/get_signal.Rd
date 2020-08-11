@@ -15,5 +15,5 @@ get_signal(access_token, signal_id)
 A data.frame containing the data for a signal
 }
 \description{
-Function Description
+Get Signal
 }

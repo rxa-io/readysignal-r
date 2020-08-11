@@ -13,9 +13,6 @@ signal_to_csv(access_token, signal_id, file_name)
 
 \item{file_name}{File name for the CSV}
 }
-\value{
-NA
-}
 \description{
-Function Description
+Save Signal to CSV
 }
