@@ -1,7 +1,7 @@
 # Ready Signal API - R
 This library is designed to be a wrapper for the Ready Signal API: http://app.readysignal.com
 
-Please direct all questions and/or recommendations to jess.brown@rxa.io.
+Please direct all questions and/or recommendations to support@readysignal.com
 
 <br>
 
