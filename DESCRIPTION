@@ -1,15 +1,18 @@
 Package: readysignal
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Connect to the Ready Signal API
+Version: 0.1
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    c(person(given = "Davis",
+           family = "Busteed",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "davis.busteed@rxa.io"),
+      person(given = "Jess",
+           family = "Brown",
+           role = c("aut", "cre"),
+           email = "jess.brown@rxa.io"))
+Description: Set of functions that allow the user
+    to easily interact with the Ready Signal API.
+License: MIT
 Imports:
     httr,
     jsonlite
