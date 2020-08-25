@@ -75,7 +75,7 @@ get_signal_details <- function(access_token, signal_id)
 #' @return A data.frame containing the data for a signal
 #' @export
 get_signal <- function(access_token, signal_id) 
-{
+{  
   url <- sprintf("https://app.readysignal.com/api/signals/%s/output?page=1", signal_id)
 
   auth <- paste0("Bearer ", access_token)
@@ -96,15 +96,25 @@ get_signal <- function(access_token, signal_id)
   }
 
   while (json$current_page < json$last_page) {
+
+    # don't show those HTTP 429 errors
+    options(warn=-1)
+
     url <- sprintf("https://app.readysignal.com/api/signals/%s/output?page=%d", signal_id, json$current_page + 1)
     sesh <- rvest::jump_to(sesh, url)
-    
+
+    while (sesh$response$status != 200) {
+      Sys.sleep(10)
+      sesh <- rvest::jump_to(sesh, url)
+    }
+
     json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
     data <- rbind(data, json$data)
-    
+
     pb$tick()
-    Sys.sleep(1) # TODO, only sleep if HTTP 429
   }
+
+  options(warn=1)
   
   return(data)
 }
