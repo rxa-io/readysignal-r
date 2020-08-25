@@ -1,35 +1,6 @@
 # Thanks to:
 #   https://tinyheero.github.io/jekyll/update/2015/07/26/making-your-first-R-package.html
 
-# this is a helper function,
-# and is not accessible to the end user
-connect_to_readysignal <- function(access_token, signal_id=NA, output=FALSE)
-{
-  # list signals
-  if(is.na(signal_id)) 
-  {
-    url <- 'http://app.readysignal.com/api/signals'
-  }
-
-  # show signal details
-  else if(!output)
-  {
-    url <- sprintf("http://app.readysignal.com/api/signals/%s", signal_id)
-  }
-
-  # show signal
-  else
-  {
-    url <- sprintf("http://app.readysignal.com/api/signals/%s/output", signal_id)
-  }
-
-  # set up auth and make request
-  auth <- paste0("Bearer ", access_token)
-  resp <- httr::GET(url, httr::add_headers(Authorization=auth))
-  
-  return(resp)
-}
-
 
 #' List Signals
 #'
@@ -39,10 +10,38 @@ connect_to_readysignal <- function(access_token, signal_id=NA, output=FALSE)
 #' @return A data.frame containing the list of signals
 #' @export
 list_signals <- function(access_token) 
-{
-  resp <- connect_to_readysignal(access_token)
-  json <- jsonlite::fromJSON(httr::content(resp, "text"))
-  return(json$data)
+{ 
+  url <- 'https://app.readysignal.com/api/signals?page=1'
+
+  auth <- paste0("Bearer ", access_token)
+  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth))
+
+  json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
+  data <- json$data
+  
+  # make the progress bar if gonna
+  # be needing to paginate
+  if (json$meta$last_page > 1) {
+    pb <- progress::progress_bar$new(
+      format=" [:bar] :percent / :elapsed",
+      total=json$meta$last_page-1,
+      clear=FALSE,
+      width=60
+    )
+  }
+
+  while (json$meta$current_page < json$meta$last_page) {
+    url <- sprintf('https://app.readysignal.com/api/signals?page=%d', json$meta$current_page + 1)
+    sesh <- rvest::jump_to(sesh, url)
+    
+    json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
+    data <- rbind(data, json$data)
+    
+    pb$tick()
+    Sys.sleep(1) # TODO, only sleep if HTTP 429
+  }
+  
+  return(data)
 }
 
 
@@ -56,8 +55,13 @@ list_signals <- function(access_token)
 #' @export
 get_signal_details <- function(access_token, signal_id) 
 {
-  resp <- connect_to_readysignal(access_token, signal_id)
-  json <- jsonlite::fromJSON(httr::content(resp, "text"))
+  url <- sprintf("https://app.readysignal.com/api/signals/%s", signal_id)
+
+  auth <- paste0("Bearer ", access_token)
+  resp <- httr::GET(url, httr::add_headers(Authorization=auth))
+
+  json <- jsonlite::fromJSON(httr::content(resp, "text", encoding="UTF8"))
+
   return(json$data)
 }
 
@@ -71,10 +75,48 @@ get_signal_details <- function(access_token, signal_id)
 #' @return A data.frame containing the data for a signal
 #' @export
 get_signal <- function(access_token, signal_id) 
-{
-  resp <- connect_to_readysignal(access_token, signal_id, output=TRUE)
-  json <- jsonlite::fromJSON(httr::content(resp, "text"))
-  return(json$data)
+{  
+  url <- sprintf("https://app.readysignal.com/api/signals/%s/output?page=1", signal_id)
+
+  auth <- paste0("Bearer ", access_token)
+  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth))
+
+  json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
+  data <- json$data
+  
+  # make the progress bar if gonna
+  # be needing to paginate
+  if (json$last_page > 1) {
+    pb <- progress::progress_bar$new(
+      format=" [:bar] :percent / :elapsed",
+      total=json$last_page-1,
+      clear=FALSE,
+      width=60
+    )
+  }
+
+  while (json$current_page < json$last_page) {
+
+    # don't show those HTTP 429 errors
+    options(warn=-1)
+
+    url <- sprintf("https://app.readysignal.com/api/signals/%s/output?page=%d", signal_id, json$current_page + 1)
+    sesh <- rvest::jump_to(sesh, url)
+
+    while (sesh$response$status != 200) {
+      Sys.sleep(10)
+      sesh <- rvest::jump_to(sesh, url)
+    }
+
+    json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
+    data <- rbind(data, json$data)
+
+    pb$tick()
+  }
+
+  options(warn=1)
+  
+  return(data)
 }
 
 
@@ -88,9 +130,7 @@ get_signal <- function(access_token, signal_id)
 #' @export
 signal_to_csv <- function(access_token, signal_id, file_name) 
 {
-  resp <- connect_to_readysignal(access_token, signal_id, output=TRUE)
-  json <- jsonlite::fromJSON(httr::content(resp, "text"))
-  df <- json$data
+  df <- get_signal(access_token, signal_id)
   
   write.csv(df, file_name)
 }
