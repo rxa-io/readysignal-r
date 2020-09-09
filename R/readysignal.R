@@ -115,6 +115,8 @@ get_signal <- function(access_token, signal_id)
   }
 
   options(warn=1)
+
+  names(data) <- gsub("-", "_", names(data))
   
   return(data)
 }
