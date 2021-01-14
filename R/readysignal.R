@@ -1,7 +1,3 @@
-# Thanks to:
-#   https://tinyheero.github.io/jekyll/update/2015/07/26/making-your-first-R-package.html
-
-
 #' List Signals
 #'
 #' lists all the signals associated with the user's access token
@@ -12,10 +8,8 @@
 list_signals <- function(access_token) 
 { 
   url <- 'https://app.readysignal.com/api/signals?page=1'
-
-  auth <- paste0("Bearer ", access_token)
-  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth))
-
+  sesh <- get_first_session(access_token, url)
+  
   json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
   data <- json$data
   
@@ -38,7 +32,7 @@ list_signals <- function(access_token)
     data <- rbind(data, json$data)
     
     pb$tick()
-    Sys.sleep(1) # TODO, only sleep if HTTP 429
+    Sys.sleep(1)
   }
   
   return(data)
@@ -56,11 +50,9 @@ list_signals <- function(access_token)
 get_signal_details <- function(access_token, signal_id) 
 {
   url <- sprintf("https://app.readysignal.com/api/signals/%s", signal_id)
-
-  auth <- paste0("Bearer ", access_token)
-  resp <- httr::GET(url, httr::add_headers(Authorization=auth))
-
-  json <- jsonlite::fromJSON(httr::content(resp, "text", encoding="UTF8"))
+  sesh <- get_first_session(access_token, url)
+  
+  json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
 
   return(json$data)
 }
@@ -72,17 +64,19 @@ get_signal_details <- function(access_token, signal_id)
 #'
 #' @param access_token User's access token
 #' @param signal_id Signal ID
+#' @param infer.types Whether to infer columnn data types (defaults to TRUE)
 #' @return A data.frame containing the data for a signal
 #' @export
-get_signal <- function(access_token, signal_id) 
+get_signal <- function(access_token, signal_id, infer_types=TRUE) 
 {  
   url <- sprintf("https://app.readysignal.com/api/signals/%s/output?page=1", signal_id)
-
-  auth <- paste0("Bearer ", access_token)
-  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth))
+  sesh <- get_first_session(access_token, url)
 
   json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
   data <- json$data
+
+  ## TODO when get_signal_details contains # of rows, 
+  ## handle the progress bar better
   
   # make the progress bar if gonna
   # be needing to paginate
@@ -117,6 +111,21 @@ get_signal <- function(access_token, signal_id)
   options(warn=1)
 
   names(data) <- gsub("-", "_", names(data))
+
+  if(infer_types) {
+    for(i in 1:ncol(data)) {
+      tryCatch({
+        data[[i]] <- as.Date(data[[i]])
+        next
+      }, warning=function(e) {
+      }, error=function(e) {})
+
+      tryCatch({
+        data[[i]] <- type.convert(data[[i]])
+      }, warning=function(e) {
+      }, error=function(e) {})
+    }
+  }
   
   return(data)
 }
@@ -135,4 +144,40 @@ signal_to_csv <- function(access_token, signal_id, file_name)
   df <- get_signal(access_token, signal_id)
   
   write.csv(df, file_name)
+}
+
+
+# internal helper function,
+# NOT exported for external use
+get_first_session <- function(access_token, url) {
+  
+  options(warn=-1)
+  
+  auth <- paste0("Bearer ", access_token)
+  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth), httr::timeout(5))
+  
+  options(warn=1)
+  
+  status_code <- sesh$response$status_code
+  
+  if (status_code == 200) {
+    return(sesh)
+  } 
+  
+  else if (status_code == 401) {
+    msg <- "Authorization error (HTTP 401)\n"
+    msg <- paste0(msg, "    Failed to authenticate, please confirm your access token is correct.")
+    stop(msg)
+  }
+  
+  else if (status_code == 404) {
+    msg <- "Signal not found (HTTP 404)\n"
+    msg <- paste0(msg, "    Couldn't find signal, please confirm your signal_id is correct.")
+    stop(msg)
+  }
+  
+  else {
+    msg <- paste0("Error retrieving API response (HTTP ", status_code, ")")
+    stop(msg)
+  }
 }
