@@ -154,7 +154,7 @@ get_first_session <- function(access_token, url) {
   options(warn=-1)
   
   auth <- paste0("Bearer ", access_token)
-  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth), httr::timeout(5))
+  sesh <- rvest::html_session(url, httr::add_headers(Authorization=auth))
   
   options(warn=1)
   
