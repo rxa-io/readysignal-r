@@ -5,35 +5,12 @@
 #' @param access_token User's access token
 #' @return A data.frame containing the list of signals
 #' @export
-list_signals <- function(access_token) 
-{ 
+list_signals <- function(access_token) { 
   url <- 'https://app.readysignal.com/api/signals?page=1'
   sesh <- get_first_session(access_token, url)
   
   json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
   data <- json$data
-  
-  # make the progress bar if gonna
-  # be needing to paginate
-  if (json$meta$last_page > 1) {
-    pb <- progress::progress_bar$new(
-      format=" [:bar] :percent / :elapsed",
-      total=json$meta$last_page-1,
-      clear=FALSE,
-      width=60
-    )
-  }
-
-  while (json$meta$current_page < json$meta$last_page) {
-    url <- sprintf('https://app.readysignal.com/api/signals?page=%d', json$meta$current_page + 1)
-    sesh <- rvest::jump_to(sesh, url)
-    
-    json <- jsonlite::fromJSON(httr::content(sesh$response, "text", encoding="UTF8"))
-    data <- rbind(data, json$data)
-    
-    pb$tick()
-    Sys.sleep(1)
-  }
   
   return(data)
 }
@@ -47,8 +24,7 @@ list_signals <- function(access_token)
 #' @param signal_id Signal ID
 #' @return A data.frame containing the details for a given signal
 #' @export
-get_signal_details <- function(access_token, signal_id) 
-{
+get_signal_details <- function(access_token, signal_id) {
   url <- sprintf("https://app.readysignal.com/api/signals/%s", signal_id)
   sesh <- get_first_session(access_token, url)
   
@@ -64,11 +40,10 @@ get_signal_details <- function(access_token, signal_id)
 #'
 #' @param access_token User's access token
 #' @param signal_id Signal ID
-#' @param infer.types Whether to infer columnn data types (defaults to TRUE)
+#' @param infer.types Whether to infer column data types (defaults to TRUE)
 #' @return A data.frame containing the data for a signal
 #' @export
-get_signal <- function(access_token, signal_id, infer_types=TRUE) 
-{  
+get_signal <- function(access_token, signal_id, infer_types=TRUE) {  
   url <- sprintf("https://app.readysignal.com/api/signals/%s/output?page=1", signal_id)
   sesh <- get_first_session(access_token, url)
 
@@ -76,7 +51,10 @@ get_signal <- function(access_token, signal_id, infer_types=TRUE)
   data <- json$data
 
   ## TODO when get_signal_details contains # of rows, 
-  ## handle the progress bar better
+  ## handle the progress bar better. that way, we could
+  ## call the details first to get the number of rows, and
+  ## and build the progress bar off of that, rather than
+  ## making a potentially large request before making the bar
   
   # make the progress bar if gonna
   # be needing to paginate
@@ -139,10 +117,8 @@ get_signal <- function(access_token, signal_id, infer_types=TRUE)
 #' @param signal_id Signal ID
 #' @param file_name File name for the CSV
 #' @export
-signal_to_csv <- function(access_token, signal_id, file_name) 
-{
+signal_to_csv <- function(access_token, signal_id, file_name) {
   df <- get_signal(access_token, signal_id)
-  
   write.csv(df, file_name)
 }
 
