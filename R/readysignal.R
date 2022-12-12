@@ -1,20 +1,46 @@
+#---------#
+# GLOBALS #
+#---------#
+
+api_base <- "https://app.readysignal.com/api"
+callback_url <- ""
+auth_ <- NULL
+
+
 #--------------------#
 # EXPORTED FUNCTIONS #
 #--------------------#
 
+#' Init API Session
+#'
+#' initialize the API session with the access token
+#'
+#' @param access_token User access token
+#' @export
+init <- function(access_token) {
+  auth_ <<- paste0("Bearer ", access_token)
+  url <- sprintf("%s/signals", api_base)
+  resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
+  if (resp$status_code == 401) {
+    stop("Failed to authenticate, please confirm your access token is correct.")
+  }
+}
+
+
 #' List Signals
 #'
-#' lists all the signals associated with the user's access token
+#' lists all the signals associated with the User access token
 #'
-#' @param access_token User's access token
 #' @return A data.frame containing the list of signals
 #' @export
-list_signals <- function(access_token) {
-  url <- "https://app.readysignal.com/api/signals?page=1"
-  sesh <- get_first_session(access_token, url)
+list_signals <- function() {
+  check_auth()
+
+  url <- sprintf("%s/signals", api_base)
+  resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
 
   json <- jsonlite::fromJSON(
-    httr::content(sesh$response, "text", encoding = "UTF8")
+    httr::content(resp, "text", encoding = "UTF8")
   )
   data <- json$data
 
@@ -26,16 +52,17 @@ list_signals <- function(access_token) {
 #'
 #' shows the details for a specific signal
 #'
-#' @param access_token User's access token
 #' @param signal_id Signal ID
 #' @return A data.frame containing the details for a given signal
 #' @export
-get_signal_details <- function(access_token, signal_id) {
-  url <- sprintf("https://app.readysignal.com/api/signals/%s", signal_id)
-  sesh <- get_first_session(access_token, url)
+get_signal_details <- function(signal_id) {
+  check_auth()
+
+  url <- sprintf("%s/signals/%s", api_base, signal_id)
+  resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
 
   json <- jsonlite::fromJSON(
-    httr::content(sesh$response, "text", encoding = "UTF8")
+    httr::content(resp, "text", encoding = "UTF8")
   )
 
   return(json$data)
@@ -46,17 +73,15 @@ get_signal_details <- function(access_token, signal_id) {
 #'
 #' returns a signal's data in data.frame format
 #'
-#' @param access_token User's access token
 #' @param signal_id Signal ID
-#' @param infer.types Whether to infer column data types (defaults to TRUE)
+#' @param infer_types Whether to infer column data types (defaults to TRUE)
 #' @return A data.frame containing the data for a signal
 #' @export
-get_signal <- function(access_token, signal_id, infer_types = TRUE) {
-  url <- sprintf(
-    "https://app.readysignal.com/api/signals/%s/output?page=1",
-    signal_id
-  )
-  sesh <- get_first_session(access_token, url)
+get_signal <- function(signal_id, infer_types = TRUE) {
+  check_auth()
+
+  url <- sprintf("%s/signals/%s/output?page=1", api_base, signal_id)
+  sesh <- rvest::session(url, httr::add_headers(Authorization = auth_))
 
   json <- jsonlite::fromJSON(
     httr::content(sesh$response, "text", encoding = "UTF8")
@@ -69,8 +94,7 @@ get_signal <- function(access_token, signal_id, infer_types = TRUE) {
   ## and build the progress bar off of that, rather than
   ## making a potentially large request before making the bar
 
-  # make the progress bar if gonna
-  # be needing to paginate
+  # make the progress bar if gonna be needing to paginate
   if (json$last_page > 1) {
     pb <- progress::progress_bar$new(
       format = " [:bar] :percent / :elapsed",
@@ -119,7 +143,6 @@ get_signal <- function(access_token, signal_id, infer_types = TRUE) {
         warning = function(e) {
         },
         error = function(e) {
-          # ignore
         }
       )
 
@@ -130,7 +153,6 @@ get_signal <- function(access_token, signal_id, infer_types = TRUE) {
         warning = function(e) {
         },
         error = function(e) {
-          # ignore
         }
       )
     }
@@ -144,13 +166,82 @@ get_signal <- function(access_token, signal_id, infer_types = TRUE) {
 #'
 #' saves signal data to CSV file
 #'
-#' @param access_token User's access token
 #' @param signal_id Signal ID
 #' @param file_name File name for the CSV
 #' @export
-signal_to_csv <- function(access_token, signal_id, file_name) {
-  df <- get_signal(access_token, signal_id)
+signal_to_csv <- function(signal_id, file_name) {
+  df <- get_signal(signal_id)
   write.csv(df, file_name)
+}
+
+
+#' Auto Discover
+#'
+#' create a signal with the Auto Discover feature
+#'
+#' @param geo_grain Geo-grain of upload, "State" or "Country"
+#' @param filename Filename of .CSV or .XLS with "Date", "Value", "State"
+#' (if geo_grain=State) columns, not to be used with `df`
+#' @param df DataFrame with "Date", "Value", "State" (if geo_grain=State),
+#' not to be used with `filename`
+#' @return HTTP response
+#' @export
+auto_discover <- function(geo_grain, filename = NULL, df = NULL) {
+  check_auth()
+
+  if (!geo_grain %in% c("State", "Country")) {
+    stop("`geo_grain` must be \"State\" or \"Country\"")
+  }
+
+  if (!is.null(filename)) {
+    url <- sprintf("%s/auto-discovery/file", api_base)
+    resp <- httr::POST(
+      url,
+      body = list(
+        callback_url = callback_url,
+        geo_grain = geo_grain,
+        file = httr::upload_file(filename)
+      ),
+      httr::add_headers(Authorization = auth_)
+    )
+  } else if (!is.null(df)) {
+    url <- sprintf("%s/auto-discovery/array", api_base)
+    body <- list(
+      callback_url = callback_url,
+      geo_grain = geo_grain,
+      data = df
+    )
+    body <- jsonlite::toJSON(body, auto_unbox = TRUE)
+    body <- as.character(body)
+    resp <- httr::POST(
+      url,
+      body = body,
+      httr::add_headers(
+        Authorization = auth_,
+        "Content-Type" = "application/json"
+      )
+    )
+  } else {
+    stop("Missing data source, please provide `filename` or `df`")
+  }
+
+  return(httr::content(resp))
+}
+
+
+#' Delete Signal
+#'
+#' deletes a signal
+#'
+#' @param signal_id Signal ID
+#' @return HTTP response
+#' @export
+delete_signal <- function(signal_id) {
+  check_auth()
+
+  url <- sprintf("%s/signals/%s", api_base, signal_id)
+  resp <- httr::DELETE(url, httr::add_headers(Authorization = auth_))
+  return(httr::content(resp))
 }
 
 
@@ -158,36 +249,8 @@ signal_to_csv <- function(access_token, signal_id, file_name) {
 # INTERNAL FUNCTIONS #
 #--------------------#
 
-# internal helper function,
-# NOT exported for external use
-get_first_session <- function(access_token, url) {
-  options(warn = -1)
-
-  auth <- paste0("Bearer ", access_token)
-  sesh <- rvest::html_session(url, httr::add_headers(Authorization = auth))
-
-  options(warn = 1)
-
-  status_code <- sesh$response$status_code
-
-  if (status_code == 200) {
-    return(sesh)
-  } else if (status_code == 401) {
-    msg <- "Authorization error (HTTP 401)\n"
-    msg <- paste0(
-      msg,
-      "    Failed to authenticate, please confirm your access token is correct."
-    )
-    stop(msg)
-  } else if (status_code == 404) {
-    msg <- "Signal not found (HTTP 404)\n"
-    msg <- paste0(
-      msg,
-      "    Couldn't find signal, please confirm your signal_id is correct."
-    )
-    stop(msg)
-  } else {
-    msg <- paste0("Error retrieving API response (HTTP ", status_code, ")")
-    stop(msg)
+check_auth <- function() {
+  if (is.null(auth_)) {
+    stop("Missing authentication, did you run `readysignal::init(...)`?")
   }
 }

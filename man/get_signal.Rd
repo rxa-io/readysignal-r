@@ -4,14 +4,12 @@
 \alias{get_signal}
 \title{Get Signal}
 \usage{
-get_signal(access_token, signal_id, infer_types = TRUE)
+get_signal(signal_id, infer_types = TRUE)
 }
 \arguments{
-\item{access_token}{User's access token}
-
 \item{signal_id}{Signal ID}
 
-\item{infer.types}{Whether to infer columnn data types (defaults to TRUE)}
+\item{infer_types}{Whether to infer column data types (defaults to TRUE)}
 }
 \value{
 A data.frame containing the data for a signal

@@ -4,14 +4,11 @@
 \alias{list_signals}
 \title{List Signals}
 \usage{
-list_signals(access_token)
-}
-\arguments{
-\item{access_token}{User's access token}
+list_signals()
 }
 \value{
 A data.frame containing the list of signals
 }
 \description{
-lists all the signals associated with the user's access token
+lists all the signals associated with the User access token
 }

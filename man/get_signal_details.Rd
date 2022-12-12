@@ -4,11 +4,9 @@
 \alias{get_signal_details}
 \title{List Signal Details}
 \usage{
-get_signal_details(access_token, signal_id)
+get_signal_details(signal_id)
 }
 \arguments{
-\item{access_token}{User's access token}
-
 \item{signal_id}{Signal ID}
 }
 \value{
