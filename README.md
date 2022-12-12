@@ -41,21 +41,14 @@ readysignal::init(access_token)
 
 ### Available Functions
 
-Use the built-in `help()` for more details
+Use the `help()` function in the R shell for details
 ```r
-# for example...
+# view all functions
+help(package = readysignal)
+
+# view one function
 help(signal_to_csv)
 ```
-
-| Function | Notes |
-|-|-|
-| `init(`*access_token*`)` | Inititalize the API functions with your access token. This **MUST** be run for the following functions to work
-| `list_signals()` | List signals associated with your Ready Signal account |
-| `get_signal_details(`*signal_id*`)` | Get signal details |
-| `delete_signal(`*signal_id*`)` | Deletes a signal |
-| `get_signal(`*signal_id*`)` | Grab signal data as an R DataFrame |
-| `signal_to_csv(`*signal_id*, *filename*`)` | Download signal data to a CSV |
-| `auto_discover(`*geo_grain*, *filename*, *df*`)` | Upload data to Ready Signal's AutoDiscovery feature. Use `help()` for more details |
 
 <br>
 
