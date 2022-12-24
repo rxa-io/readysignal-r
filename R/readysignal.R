@@ -18,7 +18,7 @@ auth_ <- NULL
 #' @param access_token User access token
 #' @export
 init <- function(access_token) {
-  auth_ <<- paste0("Bearer ", access_token)
+  assign("auth_", paste0("Bearer ", access_token), .GlobalEnv)
   url <- sprintf("%s/signals", api_base)
   resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
   if (resp$status_code == 401) {
@@ -212,7 +212,7 @@ auto_discover <- function(geo_grain, filename = NULL, df = NULL) {
       data = df
     )
     body <- jsonlite::toJSON(body, auto_unbox = TRUE)
-    body <- as.character(body)
+    body <- as.character(body)    
     resp <- httr::POST(
       url,
       body = body,
