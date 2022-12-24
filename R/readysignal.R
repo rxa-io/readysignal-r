@@ -4,7 +4,7 @@
 
 api_base <- "https://app.readysignal.com/api"
 callback_url <- ""
-auth_ <- NULL
+# auth_ <- NULL
 
 
 #--------------------#
