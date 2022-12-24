@@ -4,7 +4,6 @@
 
 api_base <- "https://app.readysignal.com/api"
 callback_url <- ""
-# auth_ <- NULL
 
 
 #--------------------#
@@ -250,7 +249,7 @@ delete_signal <- function(signal_id) {
 #--------------------#
 
 check_auth <- function() {
-  if (is.null(auth_)) {
+  if (!exists("auth_")) {
     stop("Missing authentication, did you run `readysignal::init(...)`?")
   }
 }
