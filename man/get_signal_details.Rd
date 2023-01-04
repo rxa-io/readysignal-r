@@ -4,9 +4,11 @@
 \alias{get_signal_details}
 \title{List Signal Details}
 \usage{
-get_signal_details(signal_id)
+get_signal_details(token, signal_id)
 }
 \arguments{
+\item{token}{User access token}
+
 \item{signal_id}{Signal ID}
 }
 \value{

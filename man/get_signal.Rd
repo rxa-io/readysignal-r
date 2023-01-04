@@ -4,9 +4,11 @@
 \alias{get_signal}
 \title{Get Signal}
 \usage{
-get_signal(signal_id, infer_types = TRUE)
+get_signal(token, signal_id, infer_types = TRUE)
 }
 \arguments{
+\item{token}{User access token}
+
 \item{signal_id}{Signal ID}
 
 \item{infer_types}{Whether to infer column data types (defaults to TRUE)}

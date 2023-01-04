@@ -4,9 +4,11 @@
 \alias{signal_to_csv}
 \title{Save Signal to CSV}
 \usage{
-signal_to_csv(signal_id, file_name)
+signal_to_csv(token, signal_id, file_name)
 }
 \arguments{
+\item{token}{User access token}
+
 \item{signal_id}{Signal ID}
 
 \item{file_name}{File name for the CSV}

@@ -1,42 +1,25 @@
-#---------#
-# GLOBALS #
-#---------#
+#-----------#
+# CONSTANTS #
+#-----------#
 
 api_base <- "https://app.readysignal.com/api"
-callback_url <- ""
 
 
 #--------------------#
 # EXPORTED FUNCTIONS #
 #--------------------#
 
-#' Init API Session
-#'
-#' initialize the API session with the access token
-#'
-#' @param access_token User access token
-#' @export
-init <- function(access_token) {
-  assign("auth_", paste0("Bearer ", access_token), .GlobalEnv)
-  url <- sprintf("%s/signals", api_base)
-  resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
-  if (resp$status_code == 401) {
-    stop("Failed to authenticate, please confirm your access token is correct.")
-  }
-}
-
-
 #' List Signals
 #'
 #' lists all the signals associated with the User access token
 #'
 #' @return A data.frame containing the list of signals
+#' @param token User access token
 #' @export
-list_signals <- function() {
-  check_auth()
-
+list_signals <- function(token) {
+  auth <- build_auth(token)
   url <- sprintf("%s/signals", api_base)
-  resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
+  resp <- httr::GET(url, httr::add_headers(Authorization = auth))
 
   json <- jsonlite::fromJSON(
     httr::content(resp, "text", encoding = "UTF8")
@@ -51,20 +34,21 @@ list_signals <- function() {
 #'
 #' shows the details for a specific signal
 #'
+#' @param token User access token
 #' @param signal_id Signal ID
 #' @return A data.frame containing the details for a given signal
 #' @export
-get_signal_details <- function(signal_id) {
-  check_auth()
-
+get_signal_details <- function(token, signal_id) {
+  auth <- build_auth(token)
   url <- sprintf("%s/signals/%s", api_base, signal_id)
-  resp <- httr::GET(url, httr::add_headers(Authorization = auth_))
+  resp <- httr::GET(url, httr::add_headers(Authorization = auth))
 
   json <- jsonlite::fromJSON(
     httr::content(resp, "text", encoding = "UTF8")
   )
+  data <- json$data
 
-  return(json$data)
+  return(data)
 }
 
 
@@ -72,15 +56,16 @@ get_signal_details <- function(signal_id) {
 #'
 #' returns a signal's data in data.frame format
 #'
+#' @param token User access token
 #' @param signal_id Signal ID
 #' @param infer_types Whether to infer column data types (defaults to TRUE)
 #' @return A data.frame containing the data for a signal
+#' @importFrom utils type.convert
 #' @export
-get_signal <- function(signal_id, infer_types = TRUE) {
-  check_auth()
-
+get_signal <- function(token, signal_id, infer_types = TRUE) {
+  auth <- build_auth(token)
   url <- sprintf("%s/signals/%s/output?page=1", api_base, signal_id)
-  sesh <- rvest::session(url, httr::add_headers(Authorization = auth_))
+  sesh <- rvest::session(url, httr::add_headers(Authorization = auth))
 
   json <- jsonlite::fromJSON(
     httr::content(sesh$response, "text", encoding = "UTF8")
@@ -139,20 +124,16 @@ get_signal <- function(signal_id, infer_types = TRUE) {
           data[[i]] <- as.Date(data[[i]])
           next
         },
-        warning = function(e) {
-        },
-        error = function(e) {
-        }
+        warning = function(e) {},
+        error = function(e) {}
       )
 
       tryCatch(
         {
           data[[i]] <- type.convert(data[[i]])
         },
-        warning = function(e) {
-        },
-        error = function(e) {
-        }
+        warning = function(e) {},
+        error = function(e) {}
       )
     }
   }
@@ -165,11 +146,14 @@ get_signal <- function(signal_id, infer_types = TRUE) {
 #'
 #' saves signal data to CSV file
 #'
+#' @param token User access token
 #' @param signal_id Signal ID
 #' @param file_name File name for the CSV
+#' @importFrom utils write.csv
 #' @export
-signal_to_csv <- function(signal_id, file_name) {
-  df <- get_signal(signal_id)
+signal_to_csv <- function(token, signal_id, file_name) {
+  auth <- build_auth(token)
+  df <- get_signal(token, signal_id)
   write.csv(df, file_name)
 }
 
@@ -178,6 +162,7 @@ signal_to_csv <- function(signal_id, file_name) {
 #'
 #' create a signal with the Auto Discover feature
 #'
+#' @param token User access token
 #' @param geo_grain Geo-grain of upload, "State" or "Country"
 #' @param filename Filename of .CSV or .XLS with "Date", "Value", "State"
 #' (if geo_grain=State) columns, not to be used with `df`
@@ -185,11 +170,15 @@ signal_to_csv <- function(signal_id, file_name) {
 #' not to be used with `filename`
 #' @return HTTP response
 #' @export
-auto_discover <- function(geo_grain, filename = NULL, df = NULL) {
-  check_auth()
+auto_discover <- function(token, geo_grain, filename = NULL, df = NULL, callback_url = NULL) {
+  auth <- build_auth(token)
 
   if (!geo_grain %in% c("State", "Country")) {
     stop("`geo_grain` must be \"State\" or \"Country\"")
+  }
+
+  if (is.null(callback_url)) {
+    callback_url <- ""
   }
 
   if (!is.null(filename)) {
@@ -201,7 +190,7 @@ auto_discover <- function(geo_grain, filename = NULL, df = NULL) {
         geo_grain = geo_grain,
         file = httr::upload_file(filename)
       ),
-      httr::add_headers(Authorization = auth_)
+      httr::add_headers(Authorization = auth)
     )
   } else if (!is.null(df)) {
     url <- sprintf("%s/auto-discovery/array", api_base)
@@ -216,7 +205,7 @@ auto_discover <- function(geo_grain, filename = NULL, df = NULL) {
       url,
       body = body,
       httr::add_headers(
-        Authorization = auth_,
+        Authorization = auth,
         "Content-Type" = "application/json"
       )
     )
@@ -232,14 +221,14 @@ auto_discover <- function(geo_grain, filename = NULL, df = NULL) {
 #'
 #' deletes a signal
 #'
+#' @param token User access token
 #' @param signal_id Signal ID
 #' @return HTTP response
 #' @export
-delete_signal <- function(signal_id) {
-  check_auth()
-
+delete_signal <- function(token, signal_id) {
+  auth <- build_auth(token)
   url <- sprintf("%s/signals/%s", api_base, signal_id)
-  resp <- httr::DELETE(url, httr::add_headers(Authorization = auth_))
+  resp <- httr::DELETE(url, httr::add_headers(Authorization = auth))
   return(httr::content(resp))
 }
 
@@ -248,8 +237,23 @@ delete_signal <- function(signal_id) {
 # INTERNAL FUNCTIONS #
 #--------------------#
 
-check_auth <- function() {
-  if (!exists("auth_")) {
-    stop("Missing authentication, did you run `readysignal::init(...)`?")
+build_auth <- function(token) {
+  #
+  # build and check auth header, raise
+  # an error if unable to list signals
+  #
+  # TODO this could use work. a better
+  # way to catch token errors without
+  # the extra overhead
+  #
+  auth <- paste0("Bearer ", token)
+  resp <- httr::GET(
+    sprintf("%s/signals", api_base),
+    httr::add_headers(Authorization = auth)
+  )
+  if (resp$status_code == 401) {
+    stop("Failed to authenticate, please confirm your access token is correct.")
+  } else {
+    return(auth)
   }
 }

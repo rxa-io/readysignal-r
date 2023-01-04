@@ -1,4 +1,5 @@
 .Rhistory
 .idea
 TODO
-R.Rcheck/
+*.Rcheck/
+*.tar.gz

@@ -4,7 +4,10 @@
 \alias{list_signals}
 \title{List Signals}
 \usage{
-list_signals()
+list_signals(token)
+}
+\arguments{
+\item{token}{User access token}
 }
 \value{
 A data.frame containing the list of signals

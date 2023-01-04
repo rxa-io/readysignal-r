@@ -4,9 +4,11 @@
 \alias{delete_signal}
 \title{Delete Signal}
 \usage{
-delete_signal(signal_id)
+delete_signal(token, signal_id)
 }
 \arguments{
+\item{token}{User access token}
+
 \item{signal_id}{Signal ID}
 }
 \value{

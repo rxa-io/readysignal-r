@@ -1,3 +1,7 @@
+#
+# custom tests because i had issues with `testthat`
+# 
+
 source("../R/readysignal.R")
 
 # API Call Before Init

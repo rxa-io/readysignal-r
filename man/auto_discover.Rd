@@ -4,9 +4,17 @@
 \alias{auto_discover}
 \title{Auto Discover}
 \usage{
-auto_discover(geo_grain, filename = NULL, df = NULL)
+auto_discover(
+  token,
+  geo_grain,
+  filename = NULL,
+  df = NULL,
+  callback_url = NULL
+)
 }
 \arguments{
+\item{token}{User access token}
+
 \item{geo_grain}{Geo-grain of upload, "State" or "Country"}
 
 \item{filename}{Filename of .CSV or .XLS with "Date", "Value", "State"

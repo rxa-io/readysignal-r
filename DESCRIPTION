@@ -1,24 +1,23 @@
 Package: readysignal
 Title: Connect to the Ready Signal API
-Version: 0.2
+Version: 0.0.3
 Authors@R: 
-    c(person(given = "Davis",
-           family = "Busteed",
-           role = c("aut", "cre"),
-           email = "davis.busteed@rxa.io"),
-      person(given = "Jess",
-           family = "Brown",
-           email = "jess.brown@rxa.io"))
-Description: Set of functions that allow the user
-    to easily interact with the Ready Signal API.
-License: MIT
-Imports:
-    httr,
-    jsonlite
+    person(
+        given = "Davis",
+        family = "Busteed",
+        email = "davis.busteed@rxa.io",
+        role = c("aut", "cre"),
+    )
+Description: Set of functions for interacting with the Ready Signal API.
+License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Imports:
+    httr,
+    jsonlite,
+    rvest,
+    progress
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
