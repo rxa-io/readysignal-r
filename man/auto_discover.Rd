@@ -22,6 +22,8 @@ auto_discover(
 
 \item{df}{DataFrame with "Date", "Value", "State" (if geo_grain=State),
 not to be used with \code{filename}}
+
+\item{callback_url}{Callback URL for notifications}
 }
 \value{
 HTTP response

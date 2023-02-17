@@ -168,6 +168,7 @@ signal_to_csv <- function(token, signal_id, file_name) {
 #' (if geo_grain=State) columns, not to be used with `df`
 #' @param df DataFrame with "Date", "Value", "State" (if geo_grain=State),
 #' not to be used with `filename`
+#' @param callback_url Callback URL for notifications
 #' @return HTTP response
 #' @export
 auto_discover <- function(token, geo_grain, filename = NULL, df = NULL, callback_url = NULL) {
