@@ -7,6 +7,8 @@ test_that("Invalid Token", {
     expect_error(list_signals(bad_token))
 })
 
-test_that("Correct Token", {
-    expect_no_error(list_signals(token))
-})
+if (authenticated) {
+    test_that("Correct Token", {
+        expect_no_error(list_signals(token))
+    })
+}
