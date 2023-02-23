@@ -1,6 +1,6 @@
 Package: readysignal
 Title: 'Ready Signal' API Wrapper
-Version: 0.0.6
+Version: 0.0.7
 Authors@R: 
     person(
         given = "Davis",
@@ -10,7 +10,7 @@ Authors@R:
     )
 Description: A simple way to interact with the 'Ready Signal' API without
     leaving your 'R' environment. Discover features, manage signals, and retrieve data easily.
-    View the full API documentation at <[https://readysignal.com/ready-signal-api-documentation]><https://readysignal.com/ready-signal-api-documentation>.
+    View the full API documentation at <https://readysignal.com/ready-signal-api-documentation>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
