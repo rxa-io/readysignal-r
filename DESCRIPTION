@@ -1,6 +1,6 @@
 Package: readysignal
-Title: Connect to the Ready Signal API
-Version: 0.0.5
+Title: 'Ready Signal' API Wrapper
+Version: 0.0.6
 Authors@R: 
     person(
         given = "Davis",
@@ -8,7 +8,9 @@ Authors@R:
         email = "davis.busteed@rxa.io",
         role = c("aut", "cre"),
     )
-Description: Set of functions for interacting with the Ready Signal API.
+Description: A simple way to interact with the 'Ready Signal' API without
+    leaving your 'R' environment. Discover features, manage signals, and retrieve data easily.
+    View the full API documentation at <[https://readysignal.com/ready-signal-api-documentation]><https://readysignal.com/ready-signal-api-documentation>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

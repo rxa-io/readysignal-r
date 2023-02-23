@@ -90,19 +90,16 @@ get_signal <- function(token, signal_id, infer_types = TRUE) {
 
   while (json$current_page < json$last_page) {
 
-    # don't show those HTTP 429 errors
-    options(warn = -1)
-
     url <- sprintf(
       "https://app.readysignal.com/api/signals/%s/output?page=%d",
       signal_id,
       json$current_page + 1
     )
-    sesh <- rvest::jump_to(sesh, url)
+    sesh <- rvest::session_jump_to(sesh, url)
 
     while (sesh$response$status != 200) {
       Sys.sleep(10)
-      sesh <- rvest::jump_to(sesh, url)
+      sesh <- rvest::session_jump_to(sesh, url)
     }
 
     json <- jsonlite::fromJSON(
@@ -112,8 +109,6 @@ get_signal <- function(token, signal_id, infer_types = TRUE) {
 
     pb$tick()
   }
-
-  options(warn = 1)
 
   names(data) <- gsub("-", "_", names(data))
 
@@ -150,6 +145,7 @@ get_signal <- function(token, signal_id, infer_types = TRUE) {
 #' @param signal_id Signal ID
 #' @param file_name File name for the CSV
 #' @importFrom utils write.csv
+#' @return None, function writes data to file system
 #' @export
 signal_to_csv <- function(token, signal_id, file_name) {
   auth <- build_auth(token)

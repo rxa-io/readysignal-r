@@ -13,6 +13,9 @@ signal_to_csv(token, signal_id, file_name)
 
 \item{file_name}{File name for the CSV}
 }
+\value{
+None, function writes data to file system
+}
 \description{
 saves signal data to CSV file
 }
