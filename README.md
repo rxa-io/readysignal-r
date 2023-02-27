@@ -9,6 +9,10 @@ Please direct all questions and/or recommendations to support@readysignal.com
 ## Installation
 
 ```R
+# install from CRAN
+install.packages("readysignal")
+
+# or install from GitHub
 library(devtools)
 devtools::install_github("rxa-io/readysignal-r")
 ```
