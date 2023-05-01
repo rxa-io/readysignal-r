@@ -7,6 +7,7 @@
 auto_discover(
   token,
   geo_grain,
+  date_grain,
   filename = NULL,
   df = NULL,
   callback_url = NULL
@@ -15,13 +16,15 @@ auto_discover(
 \arguments{
 \item{token}{User access token}
 
-\item{geo_grain}{Geo-grain of upload, "State" or "Country"}
+\item{geo_grain}{Geo grain of upload, "State" or "Country"}
+
+\item{date_grain}{Date grain of upload, "Day" or "Month"}
 
 \item{filename}{Filename of .CSV or .XLS with "Date", "Value", "State"
-(if geo_grain=State) columns, not to be used with \code{df}}
+(if geo_grain=State) columns. Not to be used with \code{df}}
 
-\item{df}{DataFrame with "Date", "Value", "State" (if geo_grain=State),
-not to be used with \code{filename}}
+\item{df}{DataFrame with "Date", "Value", "State" (if geo_grain=State).
+Not to be used with \code{filename}}
 
 \item{callback_url}{Callback URL for notifications}
 }

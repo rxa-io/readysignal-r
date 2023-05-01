@@ -84,10 +84,10 @@ signal_to_csv(token, signal_id, 'my_signal.csv')
 # MUST be c("Date", "Value"). When geo-grain=State,
 # columns MUST be c("Date", "Value", "State")
 df <- data.frame(
-    Date=c("2022-01-01", "2022-02-01", "2022-03-01"), 
+    Date=c("2022-01-01", "2022-01-02", "2022-01-03"), 
     Value=c(351, 465, 712)
 )
-auto_discover(token, geo_grain="Country", df=df)
+auto_discover(token, geo_grain="Country", date_grain="Day", df=df)
 
 # use AutoDiscovery with a file upload, this time we'll
 # use a State geo_grain. The file needs the same columns
@@ -96,7 +96,7 @@ system("cat states.csv") # Date,State,Value
                          # 2020-03-01,TN,416000
                          # 2020-03-01,KY,373000
                          #        ...
-resp <- auto_discover(token, geo_grain="State", filename="states.csv")
+resp <- auto_discover(token, geo_grain="State", date_grain="Month", filename="states.csv")
 
 # delete a signal (in this case, the one we just created)
 delete_signal(token, resp$signal_id)

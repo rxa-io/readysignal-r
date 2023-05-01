@@ -159,19 +159,24 @@ signal_to_csv <- function(token, signal_id, file_name) {
 #' create a signal with the Auto Discover feature
 #'
 #' @param token User access token
-#' @param geo_grain Geo-grain of upload, "State" or "Country"
+#' @param geo_grain Geo grain of upload, "State" or "Country"
+#' @param date_grain Date grain of upload, "Day" or "Month"
 #' @param filename Filename of .CSV or .XLS with "Date", "Value", "State"
-#' (if geo_grain=State) columns, not to be used with `df`
-#' @param df DataFrame with "Date", "Value", "State" (if geo_grain=State),
-#' not to be used with `filename`
+#' (if geo_grain=State) columns. Not to be used with `df`
+#' @param df DataFrame with "Date", "Value", "State" (if geo_grain=State).
+#' Not to be used with `filename`
 #' @param callback_url Callback URL for notifications
 #' @return HTTP response
 #' @export
-auto_discover <- function(token, geo_grain, filename = NULL, df = NULL, callback_url = NULL) {
+auto_discover <- function(token, geo_grain, date_grain, filename = NULL, df = NULL, callback_url = NULL) {
   auth <- build_auth(token)
 
   if (!geo_grain %in% c("State", "Country")) {
     stop("`geo_grain` must be \"State\" or \"Country\"")
+  }
+
+  if (!date_grain %in% c("Day", "Month")) {
+    stop("`date_grain` must by \"Day\" or \"Month\"")
   }
 
   if (is.null(callback_url)) {
@@ -185,6 +190,7 @@ auto_discover <- function(token, geo_grain, filename = NULL, df = NULL, callback
       body = list(
         callback_url = callback_url,
         geo_grain = geo_grain,
+        date_grain = date_grain,
         file = httr::upload_file(filename)
       ),
       httr::add_headers(Authorization = auth)
@@ -194,6 +200,7 @@ auto_discover <- function(token, geo_grain, filename = NULL, df = NULL, callback
     body <- list(
       callback_url = callback_url,
       geo_grain = geo_grain,
+      date_grain = date_grain,
       data = df
     )
     body <- jsonlite::toJSON(body, auto_unbox = TRUE)
