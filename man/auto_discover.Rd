@@ -10,6 +10,7 @@ auto_discover(
   date_grain,
   filename = NULL,
   df = NULL,
+  create_custom_features = 1,
   callback_url = NULL
 )
 }
@@ -25,6 +26,8 @@ auto_discover(
 
 \item{df}{DataFrame with "Date", "Value", "State" (if geo_grain=State).
 Not to be used with \code{filename}}
+
+\item{create_custom_features}{Flag for custom feature creation. 0 or 1, defaults to 1}
 
 \item{callback_url}{Callback URL for notifications}
 }

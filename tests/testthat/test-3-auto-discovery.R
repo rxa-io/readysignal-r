@@ -75,6 +75,20 @@ if (authenticated) {
         )
     })
 
+    s6 <- NULL
+    test_that("Non-Default Create Custom Features", {
+        df <- read.csv("./data/states.csv")
+        expect_no_error(
+            s6 <<- auto_discover(
+                token,
+                geo_grain = "State",
+                date_grain = "Month",
+                df = df,
+                create_custom_features = 0,
+            )$signal_id
+        )
+    })
+
     # Delete Signals
     test_that("Delete Signals", {
         expect_no_error(delete_signal(token, s1))
@@ -82,5 +96,6 @@ if (authenticated) {
         expect_no_error(delete_signal(token, s3))
         expect_no_error(delete_signal(token, s4))
         expect_no_error(delete_signal(token, s5))
+        expect_no_error(delete_signal(token, s6))
     })
 }

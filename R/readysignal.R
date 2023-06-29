@@ -165,10 +165,11 @@ signal_to_csv <- function(token, signal_id, file_name) {
 #' (if geo_grain=State) columns. Not to be used with `df`
 #' @param df DataFrame with "Date", "Value", "State" (if geo_grain=State).
 #' Not to be used with `filename`
+#' @param create_custom_features Flag for custom feature creation. 0 or 1, defaults to 1
 #' @param callback_url Callback URL for notifications
 #' @return HTTP response
 #' @export
-auto_discover <- function(token, geo_grain, date_grain, filename = NULL, df = NULL, callback_url = NULL) {
+auto_discover <- function(token, geo_grain, date_grain, filename = NULL, df = NULL, create_custom_features = 1, callback_url = NULL) {
   auth <- build_auth(token)
 
   if (!geo_grain %in% c("State", "Country")) {
@@ -177,6 +178,10 @@ auto_discover <- function(token, geo_grain, date_grain, filename = NULL, df = NU
 
   if (!date_grain %in% c("Day", "Month")) {
     stop("`date_grain` must by \"Day\" or \"Month\"")
+  }
+
+  if (!create_custom_features %in% c(0, 1)) {
+    stop("`create_custom_features` must by 0 or 1")
   }
 
   if (is.null(callback_url)) {
@@ -189,6 +194,7 @@ auto_discover <- function(token, geo_grain, date_grain, filename = NULL, df = NU
       url,
       body = list(
         callback_url = callback_url,
+        create_custom_features = create_custom_features,
         geo_grain = geo_grain,
         date_grain = date_grain,
         file = httr::upload_file(filename)
@@ -199,6 +205,7 @@ auto_discover <- function(token, geo_grain, date_grain, filename = NULL, df = NU
     url <- sprintf("%s/auto-discovery/array", api_base)
     body <- list(
       callback_url = callback_url,
+      create_custom_features = create_custom_features,
       geo_grain = geo_grain,
       date_grain = date_grain,
       data = df
